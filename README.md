@@ -27,10 +27,18 @@ const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 ## 安装
 
 ```bash
-# 在 DSH 注入器环境（已 dsh-plugin 安装）执行：
-dev_inject_plugin file:/path/to/dsh-chinese-skill-patch
-# 或发布后：
-dsh plugin --profile web add @dsh-external/dsh-chinese-skill-patch
+# 方式 1：源码注入（推荐）
+cd D:\dsh-plugin
+dev_inject_plugin file:D:\dsh-plugin\dsh-chinese-skill-patch
+
+# 方式 2：GitHub release tarball
+dsh plugin --profile web add https://github.com/FeatherHunter/dsh-chinese-skill-patch/releases/download/v0.0.2/dsh-external-dsh-chinese-skill-patch-0.0.1.tgz
+
+# 方式 3：拉取 GitHub 后构建注入
+git clone https://github.com/FeatherHunter/dsh-chinese-skill-patch
+cd dsh-chinese-skill-patch && npm install --no-save typescript && \
+  DSH_CHECKOUT=/path/to/dsh bash scripts/build.sh
+dev_inject_plugin file:$(pwd)
 ```
 
 安装后**重启 `dsh web`**，下次扫描到中文 `SKILL.md` 即生效。
