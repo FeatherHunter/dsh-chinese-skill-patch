@@ -1,4 +1,5 @@
 node_modules/
-lib/
 *.tsbuildinfo
 *.tgz
+# lib/ is committed for direct npm install (no build needed)
+# If you fork, run `bash scripts/build.sh` to rebuild locally
