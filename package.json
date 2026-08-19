@@ -1,0 +1,25 @@
+{
+  "name": "@dsh-external/dsh-chinese-skill-patch",
+  "version": "0.0.1",
+  "description": "让 DSH 自动支持中文技能名（私家大厨 / 卡路里 / 作息管家 等）。安装后中文 SKILL.md 无需改英文即可被发现。",
+  "private": true,
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/types/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "license": "BSD-3-Clause",
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "@deepseek-ai/cordis": ">=4.0.0-rc <5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
