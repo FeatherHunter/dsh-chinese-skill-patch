@@ -13,7 +13,7 @@ import type { Context } from '@deepseek-ai/cordis';
  * 工具型式：toolkit（无 UI/无 daemon），由 plugin apply 一次性注册。
  */
 export declare const name = "@dsh-external/dsh-chinese-skill-patch";
-export declare const inject: readonly ["skills"];
+export declare const inject: readonly ["skills", "tools"];
 export interface Config {
     /** 自定义中文校验正则，默认放行 Unicode 字母+数字+中划线 */
     allowPunycode?: boolean;
