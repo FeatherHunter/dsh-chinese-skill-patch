@@ -121,6 +121,11 @@ npm run build      # tsc → lib/
 * 上游：https://github.com/deepseek-ai/deepseek-harness
 * 同作者：`dsh-prompt`（Prompt 工具箱）、`dsh-opencode-palette`（主题）
 
+## 更新日志
+
+- **0.1.1**（2026-08-20）：修复 `#1` — 左斜杠中文技能双次注入（`seq11/12 identical`）。以原生持久化 `CN_GESTURE` 为单一来源，插件仅在原生未支持时兜底，并对 `decision` 已有注入幂等去重，兼容 `inner/outer` 双顺序；新增 `session.jsonl` 集成回归与 5 场景去重测试。
+- **0.1.0**：首发 — Unicode `[\p{L}0-9]` 打通 `dsh-skill/filesystem/tool-skill`，`BOM`/`>` 兼容，`_chinese_skill_patch_list` 验证。
+
 ## 许可
 
 MIT — 与 `dsh-prompt` 一致。允许商用，需保留版权。

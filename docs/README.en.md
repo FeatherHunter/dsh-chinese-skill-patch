@@ -99,6 +99,11 @@ npm run build  # tsc → lib/
 
 Source `src/index.ts` (`@ts-nocheck`, three patches).
 
+## Changelog
+
+- **0.1.1** (2026-08-20): Fix #1 — double injection for Chinese slash gesture (`seq11/12 identical`). Single source via patched native `CN_GESTURE`, plugin falls back only when native not yet CN-capable, dedup against `decision` injections (both handler orders).
+- **0.1.0**: Initial — Unicode `[\p{L}0-9]` across `dsh-skill/filesystem/tool-skill`, `BOM`/`>` compatible.
+
 ## License
 
 MIT — same as `dsh-prompt`.
