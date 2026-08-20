@@ -1,15 +1,42 @@
 {
-  "name": "@dsh-external/dsh-chinese-skill-patch",
-  "version": "0.0.1",
-  "description": "让 DSH 自动支持中文技能名（私家大厨 / 卡路里 / 作息管家 等）。安装后中文 SKILL.md 无需改英文即可被发现。",
-  "private": true,
+  "name": "dsh-chinese-skill-patch",
+  "version": "0.1.0",
+  "description": "让 DSH 自动支持中文技能名（私家大厨/卡路里/作息管家 等）| Make DeepSeek Harness discover Chinese SKILL.md without renaming — slash /私 → 私家大厨, /私家大厨 直达, skill({name:\"私家大厨\"}) 均可用",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek",
+    "deepseek-harness",
+    "skill",
+    "skills",
+    "chinese",
+    "i18n",
+    "unicode",
+    "slash",
+    "cjk"
+  ],
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json",
+    "./cordis.patch.yml": "./cordis.patch.yml"
+  },
   "files": [
-    "lib"
+    "lib",
+    "cordis.patch.yml"
   ],
-  "license": "BSD-3-Clause",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FeatherHunter/dsh-chinese-skill-patch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FeatherHunter/dsh-chinese-skill-patch/issues"
+  },
+  "homepage": "https://github.com/FeatherHunter/dsh-chinese-skill-patch#readme",
+  "author": "FeatherHunter",
   "peerDependencies": {
     "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
     "@deepseek-ai/cordis": ">=4.0.0-rc <5"
@@ -21,5 +48,14 @@
   "scripts": {
     "build": "bash scripts/build.sh",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }

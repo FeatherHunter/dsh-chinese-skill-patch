@@ -1,0 +1,7 @@
+# dsh-chinese-skill-patch bundle 层：插入宿主加载器插件条目。
+# 由 dsh plugin --profile <name> add 自动装配（包声明 dsh.bundle.patch），
+# 无需手动编辑；dsh plugin remove 时自动移除。
+- insert:
+    - id: dsh-chinese-skill-patch
+      name: 'dsh-chinese-skill-patch'
+      config: {}

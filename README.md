@@ -1,94 +1,126 @@
-# @dsh-external/dsh-chinese-skill-patch
+# 🈶 dsh-chinese-skill-patch
 
-> **让 DSH（DeepSeek Harness）自动支持中文技能名** —— `私家大厨` / `卡路里` / `作息管家` 等中文 `SKILL.md` 无需改英文即可被 `dsh-skill` 发现和加载。
+**🌐 [中文](README.md) · [English](docs/README.en.md)**
+
+**让 DeepSeek Harness 原生支持中文技能名：`私家大厨` / `卡路里` / `作息管家` 无需改英文，`/私` 即补全，`/私家大厨` 直达，`skill({name:"私家大厨"})` 亦可。**
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/dsh-chinese-skill-patch)](https://www.npmjs.com/package/dsh-chinese-skill-patch)
+[![dsh-plugin](https://img.shields.io/badge/dsh-plugin-orange.svg)](https://github.com/FeatherHunter/dsh-chinese-skill-patch)
+[![platform](https://img.shields.io/badge/platform-DeepSeek%20Harness-1f6feb.svg)](https://github.com/deepseek-ai/deepseek-harness)
 
 ## 为什么需要这个
 
-DSH 内置的 `dsh-skill` 包对技能名（`SKILL.md` 的 `name:` 字段）只接受严格的 `kebab-case`：
+DSH 内置 `dsh-skill` 对 `SKILL.md` 的 `name` 字段只认
 
 ```js
 const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 ```
 
-这意味着你写的中文 `name: 私家大厨` 会在发现阶段直接被 `warn skipped`，`skill-catalog` 始终 `complete: false`，中文技能**永远加载不到**。
+`name: 私家大厨` 会在发现阶段被 `warn skipped`，`skill-catalog` 永远 `complete: false`，中文技能永远加载不到，输入框 `/私` 不补全、` /私家大厨` 强行回车也不触发、模型 `skill({name:"私家大厨"})` 抛 `invalid skill name`。
 
-本插件以**新 provider** 方式（不修改 DSH 源码）注入一个 `rank: 90` 的扫描器，使用更宽松的 `^[\p{L}0-9]+(?:-[\p{L}0-9]+)*$/u`（Unicode 字母 + 数字 + 中划线）做校验。**中文/日文/俄文**等都能通过；同时你现有的 `dsh-skill-filesystem`（`rank: 100`）会被"近层遮远层"机制自动遮蔽，不会重复报错。
+本插件在**不改 DSH 源码、不改你 `SKILL.md` 一个字符**的前提下，用 `^[\p{L}0-9]+(?:-[\p{L}0-9]+)*$/u`（Unicode 字母+数字+中划线）打通三处硬编码：`dsh-skill` 校验、`dsh-skill-filesystem` 扫描、`dsh-tool-skill` 手势/工具。卸载即回退。
 
-## 工作原理
+## 一条命令安装
 
-| 组件 | 行为 |
-|---|---|
-| `SkillRegistry.collectLayer` | 在每个 layer 内对同名 skill 保留"首个出现者" |
-| `chinese-skill-patch` provider (`rank: 90`) | 先于 `dsh-skill-filesystem` (`rank: 100`) 抓到中文名候选 |
-| `dsh-skill-filesystem` (`rank: 100`) | 后续同 path 候选因 `validateCandidate` 失败被 `warn skipped`，不影响 catalog |
-
-> 一句话：**我加了一个 "Chinese-first" 的扫描器，原 filesystem 退化为兜底**，整个 `skill-catalog` 仍 `complete: true`，中文技能正常出现在 `ctx.skills.list()`。
-
-## 安装
+需要 **DSH CLI**：
 
 ```bash
-# 方式 1：源码注入（推荐）
-cd D:\dsh-plugin
-dev_inject_plugin file:D:\dsh-plugin\dsh-chinese-skill-patch
-
-# 方式 2：GitHub release tarball
-dsh plugin --profile web add https://github.com/FeatherHunter/dsh-chinese-skill-patch/releases/download/v0.0.2/dsh-external-dsh-chinese-skill-patch-0.0.1.tgz
-
-# 方式 3：拉取 GitHub 后构建注入
-git clone https://github.com/FeatherHunter/dsh-chinese-skill-patch
-cd dsh-chinese-skill-patch && npm install --no-save typescript && \
-  DSH_CHECKOUT=/path/to/dsh bash scripts/build.sh
-dev_inject_plugin file:$(pwd)
+npm install -g @deepseek-ai/dsh
 ```
 
-安装后**重启 `dsh web`**，下次扫描到中文 `SKILL.md` 即生效。
+装进你的 profile（`web` 为默认桌面 profile）：
+
+```bash
+dsh plugin --profile web add dsh-chinese-skill-patch
+```
+
+**零配置**：包内自带 `cordis.patch.yml`，`dsh plugin add` 自动写入 `dsh.profile.bundles`；`dsh plugin remove dsh-chinese-skill-patch` 干净卸载。重启 `dsh web`（或刷新页面）即生效。
+
+> 源码注入（开发）：
+> ```bash
+> git clone https://github.com/FeatherHunter/dsh-chinese-skill-patch
+> cd dsh-chinese-skill-patch && npm install && npm run build
+> dev_inject_plugin file:$(pwd)   # 或 dsh-super-injector 的 dev_inject_plugin
+> ```
+
+## 它为你修了什么
+
+| 输入 | 修复前 | 修复后 |
+|---|---|---|
+| `/私` | 无补全 | 下拉出现 `私家大厨`（`startsWith("私")`） |
+| `/私家大厨` 回车 | 无匹配，`SKILL_GESTURE` 仅 `a-z0-9` | 命中 `CN_GESTURE`，`agent/pre-step` 注入 `<skill_content>` |
+| `skill({name:"私家大厨"})` | `invalid skill name` | 正常加载，`content` 返回 |
+
+已处理 `BOM`（`\uFEFF`）导致的 `---` 解析失败，兼容 `description: >` 折叠语法。
 
 ## 使用示例
 
-在你的工作区 `D:\3DeepSeekHarness\agents\xiaoshan\.dsh\skills\私家大厨\SKILL.md`：
+在 `D:\3DeepSeekHarness\agents\xiaoshan\.dsh\skills\私家大厨\SKILL.md`（或任意 `~/.dsh/skills/私家大厨/SKILL.md`）：
 
 ```yaml
 ---
 name: 私家大厨
 description: 你的私家菜谱本。录菜、查菜、做菜、采购清单、烹饪历史一站管理。
-whenToUse: 当用户说 私家大厨、录菜、做菜、查菜谱、采购清单 时加载
+whenToUse: 当用户说 私家大厨、录菜、做菜 时加载
 ---
 # 私家大厨
 ...
 ```
 
-**完整保留中文目录名 + 中文 name 字段 + 中文 description**。卸载插件后才会回退到 `kebab-case` 严格模式。
-
-## 调试
-
-DSH 内已注册一个工具 `_chinese_skill_patch_list` 用于验证当前可见技能：
+目录名、中文 `name`、中文 `description` **完整保留**。`_chinese_skill_patch_list` 工具可验证：
 
 ```
 > 调用 _chinese_skill_patch_list
-→ 列出所有 rank 命中的技能（中文+英文），含 source / provider
+→ {count: 73, skills: [{name:"私家大厨", provider:"chinese-skill-patch"}]}
 ```
 
-## 范围
+## 工作原理
 
-*   ✅ 不改 DSH 源码
-*   ✅ 不改你 `D:\3DeepSeekHarness\agents\*.dsh\skills\*.md` 任何字符
-*   ✅ 卸载插件即回退到原 DSH 行为
-*   ✅ 跟 `dsh-skill-filesystem` 共存（同 path 中文名会"先到先得"）
-*   ⚠️ 升级 DSH 时若 `SkillRegistry.collectLayer` 改签名，本插件会失效（需更新）
+* **SkillRegistry 原型补丁**：`get`/`register`/`listLayerCandidates` 换成 `CN` 校验，`validateCandidateCN` 对非法候选中仅 `warn跳过` 而非让整层失败。
+* **CN 感知 provider** `chinese-skill-patch`：复刻 `dsh-skill-filesystem` 的 `roots`（`findProjectRoot` + `~/.dsh/skills` + `~/.agents/skills`）与 `parseSkillFileCN`（优先 `yaml` 库，失败回退手写，`BOM` 已处理），`rank` 与原 filesystem 一致。
+* **手势/工具**：`agent/pre-step` 新增 `CN_GESTURE` 分支（中文走新分支，英文走原分支）；全局注册 `skill` 工具的 `CN` 版，使模型侧亦可调用。
+* **持久化**：`require.resolve` 动态定位 `dsh-skill/dsh-skill-filesystem/dsh-tool-skill` 的 `lib/index.js`，字符串替换为 `CN` 正则，幂等保护（已含 `/u` 则跳过），重启后即便不注入亦生效（下次 `DSH` 升级被覆盖时插件会重打）。
 
-## 限制
+> 设计取舍：不再硬编码 `D:\3DeepSeekHarness\agents`；需全局可见请显式 `set DSH_AGENTS_DIR=D:\3DeepSeekHarness\agents` 或插件配置 `extraAgentsDir`，否则按标准 `cwd → projectRoot` 发现（`xiaoshan` 会话内 `/私` 自然可见）。
 
-*   仅对 `SKILL.md` 顶部的 `name` 字段生效；目录名可保持中文（DSH 不限制目录名）
-*   不改 DSH 闭包内 `SKILL_NAME` 常量；只对**新发现**的中文候选开放
-*   同名英文技能仍由原 `dsh-skill-filesystem` 处理
-*   若你的中文字符与 DSH 模型上下文中的 tokenization 冲突，可能需要额外的 `whenToUse` 提示
+## 配置
 
-## 开源协议
+```ts
+// cordis 插件配置（可选）
+{
+  extraAgentsDir: "D:\\3DeepSeekHarness\\agents" // 把该目录下所有 .dsh/skills 也视为 project
+}
+```
 
-BSD-3-Clause — 与 DSH 官方插件包一致。允许商业/闭源使用，需保留版权与免责声明。
+或环境变量 `DSH_AGENTS_DIR`、`DSH_HOME`、`DSH_AGENTS_HOME`。
 
-## 相关资源
+## 常见问题
 
-*   DSH 源码：`@deepseek-ai/dsh-skill`、`@deepseek-ai/dsh-skill-filesystem`
-*   上游规范：<https://github.com/deepseek-ai/deepseek-harness>
-*   本插件在 `D:\dsh-plugin\dsh-chinese-skill-patch` 维护
+**Q: 装了仍不补全？**  
+`_chinese_skill_patch_list` 看 `count` 是否含中文；`dsh web` 是否已重启；`SKILL.md` 首行是否为 `---`（无 `BOM` 外多余空行）；`name` 是否完全匹配目录内 `SKILL.md` 的 `name`。
+
+**Q: 别人装能用吗？**  
+能。`npm i dsh-chinese-skill-patch` 后 `dsh plugin add dsh-chinese-skill-patch`，无本机硬编码，`require.resolve` 自动适配各机器 `agent` 路径。`private` 已去，`files` 白名单仅 `lib` + `cordis.patch.yml`。
+
+**Q: 卸载？**  
+`dsh plugin --profile web remove dsh-chinese-skill-patch` 并重启；磁盘 `lib/index.js` 的 `CN` 正则会保留至下次 `DSH` 升级（不影响）。
+
+## 开发
+
+```bash
+npm run typecheck  # tsc --noEmit
+npm run build      # tsc → lib/
+```
+
+源码 `src/index.ts`（`@ts-nocheck`，含 `SKILL_NAME` 复刻校验与 `provider`/`pre-step`/`skill` 三补丁）。无 `client` 构建。
+
+## 相关
+
+* DSH 源码：`@deepseek-ai/dsh-skill`、`@deepseek-ai/dsh-skill-filesystem`、`@deepseek-ai/dsh-tool-skill`
+* 上游：https://github.com/deepseek-ai/deepseek-harness
+* 同作者：`dsh-prompt`（Prompt 工具箱）、`dsh-opencode-palette`（主题）
+
+## 许可
+
+MIT — 与 `dsh-prompt` 一致。允许商用，需保留版权。

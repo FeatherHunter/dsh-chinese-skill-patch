@@ -3,20 +3,25 @@ import type { Context } from '@deepseek-ai/cordis';
  * @dsh-external/dsh-chinese-skill-patch
  * 让 DSH 自动支持中文技能名（私家大厨 / 卡路里 / 作息管家 等）。
  *
- * 原理：DSH 的 `SkillRegistry` 仅校验所有 skill provider（含 filesystem）是否
- * 满足 `^[a-z0-9]+(?:-[a-z0-9]+)*$`。plugin 复用 `dsh-skill-filesystem` 的
- * 扫描逻辑，但以 `^[\p{L}0-9]+(?:-[\p{L}0-9]+)*$/u` 替换校验，自身以
- * `rank: 90` 注册（比 project-dsh 100 更优先），保留"近层遮远层"特性。
- * 不修改 DSH 源码、不改你已装在 `D:\3DeepSeekHarness\agents\*.dsh\skills\`
- * 下的 SKILL.md 任何字符；卸载插件后回退到 `kebab-case` 严格校验。
+ * 根因：DSH 三处硬编码只接受 kebab-case ascii:
+ *   1. dsh-skill: SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+ *      - validateCandidate / validateRuntimeSkill / validateDefinition / SkillRegistry.get
+ *   2. dsh-skill-filesystem: parseSkillFile -> isSkillName(name) -> warn skipped
+ *   3. dsh-tool-skill: SKILL_GESTURE + skill tool isSkillName 检查
+ *      - 输入框 /私 不能匹配，模型 skill({name:"私家大厨"}) 被拒
  *
- * 工具型式：toolkit（无 UI/无 daemon），由 plugin apply 一次性注册。
+ * 修复：
+ *  - 运行时：直接改写 SkillRegistry 原型方法（get/register/listLayerCandidates）为 CN 版，
+ *    并注册一个 CN 感知的 filesystem provider（chinese-skill-patch）来补齐中文发现；
+ *    再加一个 agent/pre-step 对 CN_GESTURE 的注入，实现 /私家大厨 直达。
+ *  - 持久化：把 agent/node_modules 下三文件的正则改成 CN 版，重启后即使不注入也生效。
  */
-export declare const name = "@dsh-external/dsh-chinese-skill-patch";
+export declare const name = "dsh-chinese-skill-patch";
 export declare const inject: readonly ["skills", "tools"];
 export interface Config {
-    /** 自定义中文校验正则，默认放行 Unicode 字母+数字+中划线 */
     allowPunycode?: boolean;
+    /** 额外 agents 聚合目录（如 D:\3DeepSeekHarness\agents），用于把其子目录的 .dsh/skills 也纳入发现；不设则不扫描，避免硬编码 */
+    extraAgentsDir?: string;
 }
 export declare const Config: any;
 export declare function apply(ctx: Context, config: Config): void;
