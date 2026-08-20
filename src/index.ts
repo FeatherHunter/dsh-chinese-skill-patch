@@ -651,10 +651,46 @@ export function apply(ctx: Context, config: Config): void {
   }, 'dsh-chinese-skill-patch: provider')
 
   // 4. 额外 agent/pre-step：让 /私家大厨 这种 CN gesture 也能注入（无需改 dsh-tool-skill 文件即可即时生效）
+  // 根因修复：持久化补丁已使原生 dsh-tool-skill 的 SKILL_GESTURE 支持 CN 时，若插件仍注入会导致同一中文名双份 <skill_content>（seq 11/12 identical）。
+  // 去重策略（经 grilling 定夺）：以原生为单一真实来源——当原生已支持 CN 时插件让位，仅当原生未支持（如首次安装未重启）时插件兜底；同时对 decision 已有注入做幂等去重，兼容 handler 注册顺序的两种情况。
   ctx.effect(() => {
+    // 缓存原生是否已支持 CN，避免每 Turn 重复探测
+    let nativeSupportsCNCache: boolean | undefined
+    async function nativeSupportsCN(): Promise<boolean> {
+      if (nativeSupportsCNCache !== undefined) return nativeSupportsCNCache
+      try {
+        const mod: any = await import('@deepseek-ai/dsh-skill')
+        if (mod?.isSkillName?.('备忘录') && mod?.isSkillName?.('私家大厨')) {
+          nativeSupportsCNCache = true
+          return true
+        }
+      } catch {}
+      try {
+        const fs = await import('node:fs/promises')
+        const { createRequire } = await import('node:module')
+        const require = createRequire(import.meta.url)
+        let file: string | null = null
+        try { file = require.resolve('@deepseek-ai/dsh-tool-skill') } catch {}
+        if (file) {
+          const content = await fs.readFile(file, 'utf8').catch(() => '')
+          if (content && content.includes('\\p{L}')) {
+            nativeSupportsCNCache = true
+            return true
+          }
+        }
+      } catch {}
+      nativeSupportsCNCache = false
+      return false
+    }
     const off = (ctx as any).on('agent/pre-step', async ({ agent, messages, signal }: any, next: any) => {
       const decision = await next()
       if (decision.kind === 'reject') return decision
+      // 若原生已支持 CN，则插件不再抢注——避免与原生各注入一次的 duplication（inner/outer 两种顺序都会重）
+      // 该分支使插件成为 fallback，仅在原生未打补丁的窗口期生效
+      if (await nativeSupportsCN()) {
+        // 额外幂等：若 decision 已含中文注入（outer 情况），也已是单份，直接返回
+        return decision
+      }
       // 只处理用户侧的 skill 注入，不干扰 compaction 等
       // 扫描所有 user 消息中的 CN gesture
       const names: string[] = []
@@ -673,6 +709,12 @@ export function apply(ctx: Context, config: Config): void {
       }
       if (names.length === 0) return decision
       signal?.throwIfAborted()
+      // 幂等去重：decision 已含的 skill-invocation（处理 outer 已注入的场景）
+      const alreadyInjected = new Set<string>(
+        (decision.messages ?? [])
+          .filter((m: any) => m?.source?.kind === 'skill-invocation' && typeof m.source.name === 'string')
+          .map((m: any) => m.source.name as string)
+      )
       // 过滤出真正的中文名（CN 且在 catalog 中且 userInvocable）
       const lookup = { cwd: agent.session.header.cwd, signal, scope: agent }
       const injections: any[] = []
@@ -689,6 +731,7 @@ export function apply(ctx: Context, config: Config): void {
       } catch {}
       if (!renderSkillContent || !createUserMessage) return decision
       for (const n of names) {
+        if (alreadyInjected.has(n)) continue
         // 只处理中文名，ascii 交给原 handler
         if (/^[a-z0-9-]+$/.test(n)) continue
         if (!CN_KEBAB.test(n)) continue

@@ -47,7 +47,8 @@
   },
   "scripts": {
     "build": "bash scripts/build.sh",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node scripts/test_dedup.mjs && node scripts/adversarial.mjs && node scripts/repro_double.mjs"
   },
   "dsh": {
     "bundle": {
