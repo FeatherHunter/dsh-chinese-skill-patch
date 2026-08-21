@@ -129,3 +129,11 @@ npm run build      # tsc → lib/
 ## 许可
 
 MIT — 与 `dsh-prompt` 一致。允许商用，需保留版权。
+
+## 反馈与联系
+
+> 遇到问题或有改进建议，欢迎在 GitHub 提交 [Issue](https://github.com/FeatherHunter/dsh-chinese-skill-patch/issues/new)；也可扫码通过飞书联系作者交流。
+
+<p align="center">
+  <img src="docs/assets/feishu-qr.png" alt="作者飞书二维码" width="280" />
+</p>

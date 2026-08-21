@@ -107,3 +107,11 @@ Source `src/index.ts` (`@ts-nocheck`, three patches).
 ## License
 
 MIT — same as `dsh-prompt`.
+
+## Feedback & Contact
+
+> Found a bug or have an idea? Please open an [Issue](https://github.com/FeatherHunter/dsh-chinese-skill-patch/issues/new) on GitHub — or scan the QR code below to reach the author on Feishu.
+
+<p align="center">
+  <img src="assets/feishu-qr.png" alt="Author Feishu QR code" width="280" />
+</p>
