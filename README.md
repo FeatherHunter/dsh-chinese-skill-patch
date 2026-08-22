@@ -98,7 +98,7 @@ whenToUse: 当用户说 私家大厨、录菜、做菜 时加载
 ## 常见问题
 
 **Q: 装了仍不补全？**  
-`_chinese_skill_patch_list` 看 `count` 是否含中文；`dsh web` 是否已重启；`SKILL.md` 首行是否为 `---`（无 `BOM` 外多余空行）；`name` 是否完全匹配目录内 `SKILL.md` 的 `name`。
+`_chinese_skill_patch_list` 看 `count` 是否含中文；`dsh web` 是否已重启；`SKILL.md` 首行是否为 `---`（无 `BOM` 外多余空行）；`name` 是否完全匹配目录内 `SKILL.md` 的 `name`；最后一个常见原因：**在安装插件/新增技能之前已打开的旧会话里，`/` 菜单不会刷新**（DSH Web 按会话缓存技能目录，这是 DSH 自身行为，对所有技能含英文名一致）——**新开会话或刷新页面**（连接重置会清缓存）即可。注意：对话侧技能目录（`system-reminder` / `_chinese_skill_patch_list`）每轮都会刷新，不受旧会话影响。
 
 **Q: 别人装能用吗？**  
 能。`npm i dsh-chinese-skill-patch` 后 `dsh plugin add dsh-chinese-skill-patch`，无本机硬编码，`require.resolve` 自动适配各机器 `agent` 路径。`private` 已去，`files` 白名单仅 `lib` + `cordis.patch.yml`。
