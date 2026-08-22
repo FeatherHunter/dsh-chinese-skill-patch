@@ -35,6 +35,8 @@ npm install -g @deepseek-ai/dsh
 dsh plugin --profile web add dsh-chinese-skill-patch
 ```
 
+**当前最新版本：`0.1.2`**（npm 徽章与[更新日志](#更新日志)同步）。
+
 **零配置**：包内自带 `cordis.patch.yml`，`dsh plugin add` 自动写入 `dsh.profile.bundles`；`dsh plugin remove dsh-chinese-skill-patch` 干净卸载。重启 `dsh web`（或刷新页面）即生效。
 
 > 源码注入（开发）：
@@ -123,6 +125,7 @@ npm run build      # tsc → lib/
 
 ## 更新日志
 
+- **0.1.2**（2026-08-22）：`#9` 排查结论落地 — ① peerDependencies 范围修正（`@deepseek-ai/dsh-tools` 显式带 prerelease 分支，消除 rc 版本 ERESOLVE）；② README FAQ 补充「旧会话菜单不刷新（DSH 会话级技能目录缓存）」说明；③ 新增 `scripts/test_rc2_dryrun.mjs` 回归测试（钉住磁盘补丁配方 vs 官方 npm rc.2 源码）；④ 新增相关插件导流与 ISSUE 引导。
 - **0.1.1**（2026-08-20）：修复 `#1` — 左斜杠中文技能双次注入（`seq11/12 identical`）。以原生持久化 `CN_GESTURE` 为单一来源，插件仅在原生未支持时兜底，并对 `decision` 已有注入幂等去重，兼容 `inner/outer` 双顺序；新增 `session.jsonl` 集成回归与 5 场景去重测试。
 - **0.1.0**：首发 — Unicode `[\p{L}0-9]` 打通 `dsh-skill/filesystem/tool-skill`，`BOM`/`>` 兼容，`_chinese_skill_patch_list` 验证。
 
@@ -132,8 +135,19 @@ MIT — 与 `dsh-prompt` 一致。允许商用，需保留版权。
 
 ## 反馈与联系
 
-> 遇到问题或有改进建议，欢迎在 GitHub 提交 [Issue](https://github.com/FeatherHunter/dsh-chinese-skill-patch/issues/new)；也可扫码通过飞书联系作者交流。
+> 🐞 **欢迎大家提交 [ISSUE](https://github.com/FeatherHunter/dsh-chinese-skill-patch/issues/new)**：遇到问题、有改进建议、想聊聊插件开发，都欢迎！
+> 也可扫码通过飞书联系作者交流（提交 Issue 前建议先看[常见问题](#常见问题)）。
 
 <p align="center">
   <img src="docs/assets/feishu-qr.png" alt="作者飞书二维码" width="280" />
 </p>
+
+## 相关插件（作者出品）
+
+- 🎨 [dsh-opencode-palette](https://github.com/FeatherHunter/dsh-opencode-palette) — 看腻了默认皮肤？34 款 opencode 经典配色一键换肤（tokyonight / dracula / gruvbox / matrix…），即点即换
+- ⚡ [dsh-prompt](https://github.com/FeatherHunter/dsh-prompt) — Prompt 工具箱：24 条深度模板随手点，`/prompt` 与智能推荐兜底，装好即用可自定义
+- 🧠 [dsh-mattpocock-skills-deck](https://github.com/FeatherHunter/dsh-mattpocock-skills-deck) — Matt Pocock 技能游戏化任务系统：map 拨开迷雾，任务栏推进一步
+- 🔬 [dsh-plugin-ui-debug](https://github.com/FeatherHunter/dsh-plugin-ui-debug) — 插件 UI 调试神器：让 AI 在真实 Chrome 里帮你看界面、点按钮、拖组件，一键安装零配置
+- 🈶 dsh-chinese-skill-patch（本插件） — 让 DSH 原生支持中文技能名，`/私` 即补全
+
+> 均已（或即将）收录于 [awesome-dsh-plugin 官方策展](https://awesome-dsh-plugin.com)，欢迎一键安装体验。

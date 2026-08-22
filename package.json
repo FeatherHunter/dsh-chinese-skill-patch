@@ -1,6 +1,6 @@
 {
   "name": "dsh-chinese-skill-patch",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "让 DSH 自动支持中文技能名（私家大厨/卡路里/作息管家 等）| Make DeepSeek Harness discover Chinese SKILL.md without renaming — slash /私 → 私家大厨, /私家大厨 直达, skill({name:\"私家大厨\"}) 均可用",
   "keywords": [
     "dsh",
@@ -38,7 +38,7 @@
   "homepage": "https://github.com/FeatherHunter/dsh-chinese-skill-patch#readme",
   "author": "FeatherHunter",
   "peerDependencies": {
-    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "@deepseek-ai/dsh-tools": ">=0.1.1-rc.1 <0.2.0-0 || >=0.2.0-0 <2",
     "@deepseek-ai/cordis": ">=4.0.0-rc <5"
   },
   "devDependencies": {
